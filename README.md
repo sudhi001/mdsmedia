@@ -1,5 +1,9 @@
 # mdsmedia
 
+[![release](https://img.shields.io/github/v/release/sudhi001/mdsmedia?sort=semver)](https://github.com/sudhi001/mdsmedia/releases)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![docs](https://img.shields.io/badge/docs-wiki-informational)](https://github.com/sudhi001/mdsmedia/wiki)
+
 A small, concurrent Rust client for the **MDS Media** (`mdssend.in`) SMS HTTP
 gateway — the `api.php` endpoint used for OTP and transactional SMS in India,
 including DLT `TID` / `PEID` parameters.
@@ -45,10 +49,35 @@ That is what most MDS integrations do, and it holds up until it doesn't:
 
 ## Install
 
+### Command-line tool
+
+```bash
+brew install sudhi001/tap/mdsmedia
+```
+
+Builds from source, so it works on **macOS and Linux** alike. Homebrew supplies
+the Rust toolchain — you do not need one installed. If Homebrew prompts you to
+trust the tap, run `brew trust sudhi001/tap` and install again.
+
+Without Homebrew:
+
+```bash
+cargo install --git https://github.com/sudhi001/mdsmedia --tag v0.1.0 --features cli
+```
+
+A prebuilt macOS arm64 binary is attached to each
+[release](https://github.com/sudhi001/mdsmedia/releases).
+
+### Library
+
 ```toml
 [dependencies]
-mdsmedia = { git = "https://github.com/sudhi001/mdsmedia" }
+mdsmedia = { git = "https://github.com/sudhi001/mdsmedia", tag = "v0.1.0" }
 ```
+
+Pin the tag. The gateway has no published specification, so parsing may need to
+change as new response shapes are observed; tracking `main` means those changes
+arrive unannounced.
 
 ## Usage
 
@@ -261,9 +290,10 @@ client.send("PHONE_NUMBER", "hello")?;
 For testing an account end to end without writing code:
 
 ```bash
-cargo install --path . --features cli
-# or: cargo build --release --features cli   ->  target/release/mdsmedia
+brew install sudhi001/tap/mdsmedia
 ```
+
+or, from a clone: `cargo build --release --features cli`.
 
 Credentials come from the same `MDS_*` variables, a `--env-file`, or flags.
 
@@ -330,6 +360,23 @@ clobbered by a checked-in default.
 
 ---
 
+## Documentation
+
+Full reference lives in the [wiki](https://github.com/sudhi001/mdsmedia/wiki):
+
+| | |
+|---|---|
+| [Installation](https://github.com/sudhi001/mdsmedia/wiki/Installation) | Feature flags, MSRV, building from a clone |
+| [Configuration](https://github.com/sudhi001/mdsmedia/wiki/Configuration) | Credentials, endpoints, DLT ids, number normalization |
+| [Sending SMS](https://github.com/sudhi001/mdsmedia/wiki/Sending-SMS) | Single sends, templates, batches, concurrency |
+| [Failover](https://github.com/sudhi001/mdsmedia/wiki/Failover) | Ordered failover across provider accounts |
+| [Observability](https://github.com/sudhi001/mdsmedia/wiki/Observability) | The `Observer` hook and what each event means |
+| [Error Handling](https://github.com/sudhi001/mdsmedia/wiki/Error-Handling) | The error taxonomy and what to retry |
+| [Gateway Responses](https://github.com/sudhi001/mdsmedia/wiki/Gateway-Responses) | What the gateway actually returns, and why it is tricky |
+| [CLI](https://github.com/sudhi001/mdsmedia/wiki/CLI) | Full command and flag reference |
+| [Troubleshooting](https://github.com/sudhi001/mdsmedia/wiki/Troubleshooting) | Symptoms → causes |
+| [FAQ](https://github.com/sudhi001/mdsmedia/wiki/FAQ) | Common questions |
+
 ## Features
 
 | feature | default | effect |
@@ -375,6 +422,9 @@ cargo test --all-features     # 54 tests, incl. mock-gateway integration tests
 cargo clippy --all-features --all-targets
 ```
 
+Integration tests run against an in-process mock gateway, so they need no
+network access and no credentials.
+
 ## Credentials
 
 No real credentials, phone numbers, endpoints, or DLT registration ids appear
@@ -385,7 +435,8 @@ environment variables or `--env-file`; `*.env` is gitignored.
 Note that this gateway takes `apikey` as a **query parameter**, so the key
 appears in any URL that gets logged. This crate strips URLs from every error
 before it escapes, but be careful with proxy logs, browser history, and shell
-history on your own side.
+history on your own side — prefer `--env-file` over the `--api-key` flag, which
+lands in both shell history and `ps` output.
 
 ## Author
 
@@ -396,6 +447,11 @@ Issues and pull requests are welcome. Since the gateway has no published
 specification, reports of response shapes this crate mis-parses are especially
 useful — please include the verbatim `Response::raw` body, with any credentials
 and phone numbers redacted.
+
+Stuck on something? Check
+[Troubleshooting](https://github.com/sudhi001/mdsmedia/wiki/Troubleshooting)
+first — it is organised symptom-first, and leads with the case where the API
+reports success but no SMS arrives.
 
 ## License
 
