@@ -1,0 +1,65 @@
+[package]
+name = "mdsmedia"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+authors = ["Sudhi S <support@sudhi.in>"]
+description = "Unofficial, lightweight async client for the MDS Media (mdssend.in) SMS HTTP gateway. Not affiliated with or endorsed by MDS Media."
+repository = "https://github.com/sudhi001/mdsmedia"
+homepage = "https://github.com/sudhi001/mdsmedia"
+documentation = "https://docs.rs/mdsmedia"
+keywords = ["sms", "otp", "mdssend", "gateway", "dlt"]
+# Unofficial, community-maintained. See the disclaimer in README.md.
+categories = ["api-bindings", "asynchronous"]
+readme = "README.md"
+
+[features]
+default = ["rustls-tls", "json"]
+# TLS backends — pick exactly one.
+rustls-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/native-tls"]
+# Parse JSON gateway responses (some MDS deployments return JSON, some plain text).
+json = ["dep:serde_json"]
+# Derive Serialize/Deserialize on Config/Response so callers can load YAML/JSON config.
+serde = ["dep:serde"]
+# Synchronous wrapper for callers with no async runtime.
+blocking = ["tokio/rt-multi-thread"]
+# The `mdsmedia` command-line tool.
+cli = ["dep:clap", "tokio/rt-multi-thread", "tokio/macros"]
+
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["http2", "charset"] }
+tokio = { version = "1", default-features = false, features = ["time"] }
+futures-util = { version = "0.3", default-features = false, features = ["std", "async-await"] }
+thiserror = "2"
+# Already in reqwest's tree — declared so we can name url::ParseError in our error enum.
+url = "2"
+serde_json = { version = "1", optional = true }
+serde = { version = "1", optional = true, features = ["derive"] }
+clap = { version = "4", optional = true, features = ["derive", "env"] }
+
+[[bin]]
+name = "mdsmedia"
+path = "src/bin/mdsmedia.rs"
+required-features = ["cli"]
+
+[[example]]
+name = "send_otp"
+path = "examples/send_otp.rs"
+
+[[example]]
+name = "bulk_concurrent"
+path = "examples/bulk_concurrent.rs"
+
+[[example]]
+name = "failover"
+path = "examples/failover.rs"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wiremock = "0.6"
+serde_json = "1"
+
+[package.metadata.docs.rs]
+all-features = true
